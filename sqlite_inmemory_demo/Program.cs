@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data.SQLite;
 using Dapper;
-using Newtonsoft.Json;
 
 namespace sqlite_inmemory_demo
 {
@@ -11,6 +10,7 @@ namespace sqlite_inmemory_demo
         {
             using(var cn = new SQLiteConnection("Data Source=:memory:"))
             {
+                cn.Open();
                 // query
                 {
                     var r = cn.QueryFirst("select 'Hello World'");
@@ -19,14 +19,16 @@ namespace sqlite_inmemory_demo
 
                 // create / insert 
                 {
-                    cn.Open();
-                    cn.Execute(@"create table T (ID int,Val varchar(20))");
+                    cn.Execute("create table t (id int,val varchar(20))");
                     for (int i = 0; i < 10; i++)
                     {
-                        cn.Execute("insert into T (ID,Val) values (@ID,@Val)",new{ID=i,Val=Guid.NewGuid().ToString("D")});                        
+                        cn.Execute("insert into t (id,val) values (@id,@val)",new{id=i,val=Guid.NewGuid().ToString("D")});                        
                     }
-                    var r = cn.Query("select * from T");
-                    System.Console.WriteLine( JsonConvert.SerializeObject(r,Formatting.Indented) );
+                    var r = cn.Query("select * from t");
+                    foreach (var item in r)
+                    {
+                        System.Console.WriteLine(item);
+                    }
                 }
             }
         }
